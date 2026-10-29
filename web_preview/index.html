@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hostel Mate - Hostel Student Management System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-navy: #0F172A;
+      --primary-blue: #1E3A8A;
+      --accent-teal: #0EA5E9;
+      --accent-cyan: #06B6D4;
+      --bg-surface: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --status-success: #10B981;
+      --status-warning: #F59E0B;
+      --status-danger: #EF4444;
+      --status-info: #3B82F6;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --border-color: #E2E8F0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: #0b1120; color: var(--text-main); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+
+    /* Phone Frame Mockup */
+    .app-device-frame {
+      width: 100%;
+      max-width: 440px;
+      height: 900px;
+      background: var(--bg-surface);
+      border-radius: 40px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4), 0 0 0 12px #1e293b, 0 0 0 14px #334155;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Device Top Notch */
+    .notch {
+      width: 150px;
+      height: 24px;
+      background: #1e293b;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+      z-index: 1000;
+    }
+
+    /* AppBar */
+    .app-header {
+      background: var(--primary-navy);
+      color: white;
+      padding: 34px 18px 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 10;
+    }
+    .app-header h1 { font-size: 17px; font-weight: 700; letter-spacing: 0.3px; display: flex; align-items: center; gap: 8px; }
+    .header-actions { display: flex; gap: 12px; }
+    .icon-btn { background: none; border: none; color: white; font-size: 16px; cursor: pointer; padding: 6px; border-radius: 8px; transition: 0.2s; }
+    .icon-btn:hover { background: rgba(255,255,255,0.1); }
+
+    /* Scrollable Screen Content */
+    .screen-content {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: none;
+    }
+    .screen-content.active { display: block; }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      background: white;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 4px 12px 4px;
+      z-index: 10;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 12px;
+      transition: 0.2s;
+    }
+    .nav-item i { font-size: 18px; }
+    .nav-item.active { color: var(--primary-blue); }
+    .nav-item.active i { color: var(--accent-teal); }
+
+    /* Card */
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid var(--border-color);
+      margin-bottom: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    /* Welcome Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, var(--primary-navy) 0%, var(--primary-blue) 100%);
+      color: white;
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 20px rgba(15, 23, 42, 0.15);
+      position: relative;
+    }
+    .hero-banner h2 { font-size: 18px; font-weight: 800; }
+    .hero-banner p { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+    .db-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.12);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--status-success); }
+
+    /* Stat Cards Grid */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 14px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.05); }
+    .stat-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .stat-val { font-size: 20px; font-weight: 800; color: var(--primary-navy); }
+    .stat-title { font-size: 12px; color: var(--text-muted); font-weight: 600; margin-top: 2px; }
+    .stat-sub { font-size: 10.5px; font-weight: 700; margin-top: 4px; }
+
+    /* Quick Action Chips */
+    .quick-actions-scroll {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 16px;
+    }
+    .action-chip {
+      background: rgba(30, 58, 138, 0.08);
+      color: var(--primary-blue);
+      border: 1px solid rgba(30, 58, 138, 0.15);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .action-chip:hover { background: rgba(30, 58, 138, 0.15); }
+
+    /* Status Badges */
+    .badge {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .badge-success { background: rgba(16, 185, 129, 0.12); color: var(--status-success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-warning { background: rgba(245, 158, 11, 0.12); color: var(--status-warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-danger { background: rgba(239, 68, 68, 0.12); color: var(--status-danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-info { background: rgba(59, 130, 246, 0.12); color: var(--status-info); border: 1px solid rgba(59, 130, 246, 0.3); }
+
+    /* Item List Tiles */
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-bottom: 1px solid var(--border-color);
+      cursor: pointer;
+    }
+    .list-item:last-child { border-bottom: none; }
+    .list-left { display: flex; align-items: center; gap: 12px; }
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: #e0f2fe;
+      color: var(--primary-blue);
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    /* Primary Action Button */
+    .btn-primary {
+      width: 100%;
+      background: var(--primary-blue);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 14.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 10px rgba(30, 58, 138, 0.25);
+    }
+    .btn-primary:hover { background: #172554; }
+
+    /* Modal Sheet */
+    .modal-overlay {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 2000;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-sheet {
+      background: white;
+      width: 100%;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      padding: 24px 20px;
+      max-height: 80%;
+      overflow-y: auto;
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    /* Forms */
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
+    .form-input {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      font-size: 13.5px;
+      outline: none;
+    }
+    .form-input:focus { border-color: var(--primary-blue); }
+
+    /* Switch Demo User Bar */
+    .demo-bar {
+      background: #1e293b;
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .demo-btn {
+      background: #334155;
+      color: white;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .demo-btn.active { background: var(--accent-teal); color: white; }
+  </style>
+</head>
+<body>
+
+  <div class="app-device-frame">
+    <div class="notch"></div>
+
+    <!-- Live Evaluation Switcher Bar -->
+    <div class="demo-bar">
+      <span>Demo Role Switcher:</span>
+      <div style="display: flex; gap: 6px;">
+        <button class="demo-btn active" id="btnAdminRole" onclick="switchRole('admin')"><i class="fa-solid fa-shield"></i> Admin</button>
+        <button class="demo-btn" id="btnStudentRole" onclick="switchRole('student')"><i class="fa-solid fa-user-graduate"></i> Student</button>
+      </div>
+    </div>
+
+    <!-- AppBar -->
+    <div class="app-header">
+      <h1 id="appTitle"><i class="fa-solid fa-hotel" style="color: var(--accent-teal);"></i> Hostel Mate</h1>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="showScreen('settings')"><i class="fa-solid fa-database"></i></button>
+        <button class="icon-btn" onclick="showScreen('info')"><i class="fa-solid fa-circle-info"></i></button>
+      </div>
+    </div>
+
+    <!-- SCREEN 1: Admin Dashboard -->
+    <div class="screen-content active" id="screenAdminDashboard">
+      <div class="hero-banner">
+        <h2>Dr. K. S. Raman</h2>
+        <p>Chief Hostel Warden • Admin Control</p>
+        <div class="db-status-pill">
+          <span class="status-dot"></span>
+          <span>MongoDB Connected (`hostel_db`)</span>
+        </div>
+      </div>
+
+      <div class="quick-actions-scroll">
+        <div class="action-chip" onclick="showScreen('students')"><i class="fa-solid fa-user-plus"></i> Students</div>
+        <div class="action-chip" onclick="showScreen('rooms')"><i class="fa-solid fa-bed"></i> Rooms</div>
+        <div class="action-chip" onclick="showScreen('attendance')"><i class="fa-solid fa-clipboard-check"></i> Attendance</div>
+        <div class="action-chip" onclick="showScreen('fees')"><i class="fa-solid fa-receipt"></i> Fees</div>
+        <div class="action-chip" onclick="showScreen('reports')"><i class="fa-solid fa-chart-pie"></i> Reports</div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card" onclick="showScreen('students')">
+          <div class="stat-icon" style="background: rgba(30,58,138,0.1); color: var(--primary-blue);"><i class="fa-solid fa-users"></i></div>
+          <div class="stat-val" id="statStudents">10</div>
+          <div class="stat-title">Total Residents</div>
+          <div class="stat-sub" style="color: var(--primary-blue);">View Directory →</div>
+        </div>
+        <div class="stat-card" onclick="showScreen('rooms')">
+          <div class="stat-icon" style="background: rgba(14,165,233,0.1); color: var(--accent-teal);"><i class="fa-solid fa-door-open"></i></div>
+          <div class="stat-val" id="statRooms">5 / 6</div>
+          <div class="stat-title">Occupied Rooms</div>
+          <div class="stat-sub" style="color: var(--status-success);">6 beds available</div>
+        </div>
+        <div class="stat-card" onclick="showScreen('fees')">
+          <div class="stat-icon" style="background: rgba(245,158,11,0.1); color: var(--status-warning);"><i class="fa-solid fa-wallet"></i></div>
+          <div class="stat-val" id="statDues">₹1.55L</div>
+          <div class="stat-title">Pending Dues</div>
+          <div class="stat-sub" style="color: var(--status-warning);">Collected: ₹1.60L</div>
+        </div>
+        <div class="stat-card" onclick="showScreen('complaints')">
+          <div class="stat-icon" style="background: rgba(239,68,68,0.1); color: var(--status-danger);"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <div class="stat-val" id="statComplaints">3</div>
+          <div class="stat-title">Complaints</div>
+          <div class="stat-sub" style="color: var(--status-danger);">2 Leaves Pending</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <h3 style="font-size: 14.5px; font-weight: 700;"><i class="fa-solid fa-wrench" style="color: var(--status-warning); margin-right: 6px;"></i> Active Grievances</h3>
+          <span class="badge badge-info" style="cursor: pointer;" onclick="showScreen('complaints')">Manage</span>
+        </div>
+        <div id="recentComplaintsList"></div>
+      </div>
+    </div>
+
+    <!-- SCREEN 2: Student Directory -->
+    <div class="screen-content" id="screenStudents">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 style="font-size: 16px; font-weight: 800;">Student Directory</h2>
+        <button class="action-chip" onclick="openAddStudentModal()"><i class="fa-solid fa-plus"></i> Add</button>
+      </div>
+      <input type="text" class="form-input" id="searchStudentInput" placeholder="Search by name, ID, or room..." onkeyup="filterStudents()" style="margin-bottom: 12px;">
+      <div class="card" style="padding: 4px;" id="studentListContainer"></div>
+    </div>
+
+    <!-- SCREEN 3: Room Management -->
+    <div class="screen-content" id="screenRooms">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h2 style="font-size: 16px; font-weight: 800;">Hostel Rooms</h2>
+        <button class="action-chip" onclick="openAddRoomModal()"><i class="fa-solid fa-plus"></i> New Room</button>
+      </div>
+      <div id="roomListContainer"></div>
+    </div>
+
+    <!-- SCREEN 4: Attendance Screen -->
+    <div class="screen-content" id="screenAttendance">
+      <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 10px;">Daily Roll Call</h2>
+      <div class="card" style="padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 13px; font-weight: 700;"><i class="fa-solid fa-calendar"></i> Today (2026-10-25)</span>
+          <span class="badge badge-success">8 Present • 1 Leave • 1 Absent</span>
+        </div>
+      </div>
+      <div class="card" style="padding: 4px;" id="attendanceListContainer"></div>
+      <button class="btn-primary" onclick="alert('Attendance saved successfully to MongoDB!')"><i class="fa-solid fa-check-circle"></i> Save Attendance Record</button>
+    </div>
+
+    <!-- SCREEN 5: Fee Management -->
+    <div class="screen-content" id="screenFees">
+      <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 10px;">Fee Payments & Dues</h2>
+      <div class="card" style="background: #f1f5f9;">
+        <div style="display: flex; justify-content: space-around; text-align: center;">
+          <div><div style="font-size: 15px; font-weight: 800;">₹3.15L</div><div style="font-size: 11px; color: var(--text-muted);">Billed</div></div>
+          <div><div style="font-size: 15px; font-weight: 800; color: var(--status-success);">₹1.60L</div><div style="font-size: 11px; color: var(--text-muted);">Collected</div></div>
+          <div><div style="font-size: 15px; font-weight: 800; color: var(--status-danger);">₹1.55L</div><div style="font-size: 11px; color: var(--text-muted);">Outstanding</div></div>
+        </div>
+      </div>
+      <div class="card" style="padding: 4px;" id="feesListContainer"></div>
+      <button class="btn-primary" onclick="openRecordPaymentModal()"><i class="fa-solid fa-receipt"></i> Record Payment</button>
+    </div>
+
+    <!-- SCREEN 6: Reports & Analytics -->
+    <div class="screen-content" id="screenReports">
+      <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Hostel Analytics & Reports</h2>
+      <div class="card">
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Bed Capacity Utilization</h4>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+          <span>Occupied: 9 / 15 Beds</span>
+          <span style="color: var(--primary-blue);">60.0%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+          <div style="width: 60%; height: 100%; background: var(--primary-blue);"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Fee Collection Efficiency</h4>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+          <span>Collected: ₹1,60,000 / ₹3,15,000</span>
+          <span style="color: var(--status-success);">50.8%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+          <div style="width: 50.8%; height: 100%; background: var(--status-success);"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Grievance Resolution Rate</h4>
+        <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; margin-bottom: 4px;">
+          <span>Resolved: 1 of 4 Tickets</span>
+          <span style="color: var(--status-warning);">25.0%</span>
+        </div>
+        <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+          <div style="width: 25%; height: 100%; background: var(--status-warning);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 7: Complaints Desk -->
+    <div class="screen-content" id="screenComplaints">
+      <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Complaints Desk</h2>
+      <div id="complaintsListContainer"></div>
+    </div>
+
+    <!-- SCREEN 8: Student Dashboard Portal -->
+    <div class="screen-content" id="screenStudentDashboard">
+      <div class="hero-banner" style="background: linear-gradient(135deg, #0F2027 0%, #203A43 50%, #2C5364 100%);">
+        <h2>Rahul Sharma</h2>
+        <p>B.Tech Computer Science • 3rd Year • Roll: 21CS101</p>
+        <div class="db-status-pill" style="background: var(--accent-teal);">
+          <i class="fa-solid fa-bed"></i> Room A-101 (Bed 1)
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(14,165,233,0.1); color: var(--accent-teal);"><i class="fa-solid fa-bed"></i></div>
+          <div class="stat-val">A-101</div>
+          <div class="stat-title">Room & Roommates</div>
+          <div class="stat-sub" style="color: var(--primary-blue);">Roommate: Priya Patel</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(16,185,129,0.1); color: var(--status-success);"><i class="fa-solid fa-chart-pie"></i></div>
+          <div class="stat-val">100%</div>
+          <div class="stat-title">Attendance Status</div>
+          <div class="stat-sub" style="color: var(--status-success);">Roll call regular</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(245,158,11,0.1); color: var(--status-warning);"><i class="fa-solid fa-wallet"></i></div>
+          <div class="stat-val">₹14,000</div>
+          <div class="stat-title">Remaining Due</div>
+          <div class="stat-sub" style="color: var(--status-warning);">Paid: ₹25,000</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background: rgba(239,68,68,0.1); color: var(--status-danger);"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+          <div class="stat-val">1</div>
+          <div class="stat-title">Active Complaint</div>
+          <div class="stat-sub" style="color: var(--status-warning);">In Progress</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">My Quick Actions</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <button class="action-chip" onclick="openStudentComplaintModal()"><i class="fa-solid fa-plus-circle"></i> File Complaint</button>
+          <button class="action-chip" onclick="openApplyLeaveModal()"><i class="fa-solid fa-plane-departure"></i> Apply Leave</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 9: Hostel Rules & Info -->
+    <div class="screen-content" id="screenInfo">
+      <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Hostel Rules & Contacts</h2>
+      <div class="card">
+        <h4 style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy); margin-bottom: 6px;">Curfew Policy</h4>
+        <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.4;">Main gates close strictly at 9:00 PM on weekdays and 9:30 PM on weekends. Late entry requires prior approval from Chief Warden.</p>
+      </div>
+      <div class="card">
+        <h4 style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy); margin-bottom: 6px;">Mess Schedule</h4>
+        <p style="font-size: 12px; color: var(--text-muted);">Breakfast: 7:30 AM - 9:00 AM • Lunch: 12:30 PM - 2:00 PM • Dinner: 7:30 PM - 9:00 PM</p>
+      </div>
+      <div class="card">
+        <h4 style="font-size: 13.5px; font-weight: 700; color: var(--primary-navy); margin-bottom: 6px;">Emergency Helpline</h4>
+        <p style="font-size: 12.5px; font-weight: 600; color: var(--status-danger);"><i class="fa-solid fa-phone"></i> +91 98450 99999 (24/7 Ambulance & Warden Desk)</p>
+      </div>
+    </div>
+
+    <!-- SCREEN 10: Settings & MongoDB -->
+    <div class="screen-content" id="screenSettings">
+      <h2 style="font-size: 16px; font-weight: 800; margin-bottom: 12px;">Settings & Database</h2>
+      <div class="card">
+        <h4 style="font-size: 13.5px; font-weight: 700; margin-bottom: 6px;"><i class="fa-solid fa-database" style="color: var(--accent-teal);"></i> MongoDB Status</h4>
+        <div class="db-status-pill" style="margin-bottom: 12px;">
+          <span class="status-dot"></span>
+          <span>Online Driver Connected</span>
+        </div>
+        <div class="form-group">
+          <label>Connection URI</label>
+          <input type="text" class="form-input" value="mongodb://10.0.2.2:27017/hostel_db" readonly>
+        </div>
+        <button class="btn-primary" style="background: var(--accent-teal);" onclick="alert('Sample data seeded successfully to MongoDB!')"><i class="fa-solid fa-cloud-arrow-down"></i> Reset & Seed Sample Data</button>
+      </div>
+      <div class="card">
+        <h4 style="font-size: 13.5px; font-weight: 700; margin-bottom: 6px;">Project Information</h4>
+        <p style="font-size: 12px; color: var(--text-muted); line-height: 1.4;">Hostel Student Management System • Flutter + Dart + MongoDB • College Mini Project</p>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="showScreen('dashboard')">
+        <i class="fa-solid fa-house"></i>
+        <span>Home</span>
+      </div>
+      <div class="nav-item" onclick="showScreen('students')">
+        <i class="fa-solid fa-user-group"></i>
+        <span>Students</span>
+      </div>
+      <div class="nav-item" onclick="showScreen('rooms')">
+        <i class="fa-solid fa-door-open"></i>
+        <span>Rooms</span>
+      </div>
+      <div class="nav-item" onclick="showScreen('attendance')">
+        <i class="fa-solid fa-clipboard-user"></i>
+        <span>Attendance</span>
+      </div>
+      <div class="nav-item" onclick="showScreen('reports')">
+        <i class="fa-solid fa-chart-pie"></i>
+        <span>Reports</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Sample MongoDB Datasets
+    const studentsData = [
+      { id: 'STU1001', name: 'Rahul Sharma', room: 'A-101', roll: '21CS101', course: 'B.Tech CSE', fee: 39000, paid: 25000 },
+      { id: 'STU1002', name: 'Priya Patel', room: 'A-101', roll: '22IT045', course: 'B.Tech IT', fee: 39000, paid: 39000 },
+      { id: 'STU1003', name: 'Amit Verma', room: 'A-102', roll: '20ME012', course: 'B.Tech Mech', fee: 30000, paid: 30000 },
+      { id: 'STU1004', name: 'Ananya Deshmukh', room: 'A-102', roll: '21EC088', course: 'B.Tech ECE', fee: 30000, paid: 15000 },
+      { id: 'STU1005', name: 'Karthik Raja', room: 'B-201', roll: '22EE033', course: 'B.Tech EEE', fee: 39000, paid: 39000 },
+      { id: 'STU1006', name: 'Sneha Kulkarni', room: 'B-202', roll: '21CE019', course: 'B.Tech Civil', fee: 27000, paid: 12000 },
+      { id: 'STU1007', name: 'Rohan Mehra', room: 'B-202', roll: '23CS072', course: 'B.Tech CSE', fee: 27000, paid: 0 },
+      { id: 'STU1008', name: 'Divya Iyer', room: 'B-202', roll: '22DS004', course: 'M.Tech DS', fee: 27000, paid: 27000 },
+      { id: 'STU1009', name: 'Vikas Singh', room: 'C-302', roll: '22CH015', course: 'B.Tech Chem', fee: 30000, paid: 0 },
+      { id: 'STU1010', name: 'Neha Joshi', room: null, roll: '23CS115', course: 'B.Tech CSE', fee: 30000, paid: 0 }
+    ];
+
+    const roomsData = [
+      { num: 'A-101', floor: 1, type: 'AC Standard', total: 2, occ: 2, rent: 6500 },
+      { num: 'A-102', floor: 1, type: 'Non-AC Deluxe', total: 3, occ: 2, rent: 5000 },
+      { num: 'B-201', floor: 2, type: 'AC Standard', total: 2, occ: 1, rent: 6500 },
+      { num: 'B-202', floor: 2, type: 'Non-AC Standard', total: 3, occ: 3, rent: 4500 },
+      { num: 'C-301', floor: 3, type: 'Non-AC Standard', total: 2, occ: 0, rent: 4500 },
+      { num: 'C-302', floor: 3, type: 'Non-AC Deluxe', total: 3, occ: 1, rent: 5000 }
+    ];
+
+    const complaintsData = [
+      { title: 'Ceiling fan regulator faulty', student: 'Rahul Sharma', room: 'A-101', cat: 'Electricity', status: 'In Progress', note: 'Electrician assigned' },
+      { title: 'Bathroom tap leaking continuously', student: 'Priya Patel', room: 'A-101', cat: 'Water', status: 'Resolved', note: 'Washer replaced' },
+      { title: 'Slow Wi-Fi speed in Block A', student: 'Ananya Deshmukh', room: 'A-102', cat: 'Wi-Fi', status: 'Pending', note: '' },
+      { title: 'Mess food quality issue', student: 'Karthik Raja', room: 'B-201', cat: 'Food', status: 'Pending', note: '' }
+    ];
+
+    let currentRole = 'admin';
+
+    function switchRole(role) {
+      currentRole = role;
+      document.getElementById('btnAdminRole').classList.toggle('active', role === 'admin');
+      document.getElementById('btnStudentRole').classList.toggle('active', role === 'student');
+      if (role === 'admin') {
+        showScreen('dashboard');
+      } else {
+        showScreen('studentDashboard');
+      }
+    }
+
+    function showScreen(name) {
+      document.querySelectorAll('.screen-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+      if (name === 'dashboard') {
+        if (currentRole === 'admin') {
+          document.getElementById('screenAdminDashboard').classList.add('active');
+        } else {
+          document.getElementById('screenStudentDashboard').classList.add('active');
+        }
+      } else if (name === 'studentDashboard') {
+        document.getElementById('screenStudentDashboard').classList.add('active');
+      } else if (name === 'students') {
+        document.getElementById('screenStudents').classList.add('active');
+        renderStudents();
+      } else if (name === 'rooms') {
+        document.getElementById('screenRooms').classList.add('active');
+        renderRooms();
+      } else if (name === 'attendance') {
+        document.getElementById('screenAttendance').classList.add('active');
+        renderAttendance();
+      } else if (name === 'fees') {
+        document.getElementById('screenFees').classList.add('active');
+        renderFees();
+      } else if (name === 'reports') {
+        document.getElementById('screenReports').classList.add('active');
+      } else if (name === 'complaints') {
+        document.getElementById('screenComplaints').classList.add('active');
+        renderComplaints();
+      } else if (name === 'info') {
+        document.getElementById('screenInfo').classList.add('active');
+      } else if (name === 'settings') {
+        document.getElementById('screenSettings').classList.add('active');
+      }
+    }
+
+    function renderStudents(filter = '') {
+      const container = document.getElementById('studentListContainer');
+      const filtered = studentsData.filter(s => s.name.toLowerCase().includes(filter) || s.id.toLowerCase().includes(filter) || (s.room && s.room.toLowerCase().includes(filter)));
+      container.innerHTML = filtered.map(s => `
+        <div class="list-item" onclick="alert('Viewing: ${s.name} (${s.id})\\nCourse: ${s.course}\\nRoom: ${s.room || 'Unallocated'}\\nTotal Fee: ₹${s.fee}\\nPaid: ₹${s.paid}')">
+          <div class="list-left">
+            <div class="avatar">${s.name.substring(0, 2).toUpperCase()}</div>
+            <div>
+              <div style="font-weight: 700; font-size: 14px;">${s.name}</div>
+              <div style="font-size: 11.5px; color: var(--text-muted);">${s.id} • ${s.course}</div>
+            </div>
+          </div>
+          <span class="badge ${s.room ? 'badge-success' : 'badge-warning'}">${s.room ? 'Room ' + s.room : 'No Room'}</span>
+        </div>
+      `).join('');
+    }
+
+    function filterStudents() {
+      const q = document.getElementById('searchStudentInput').value.toLowerCase();
+      renderStudents(q);
+    }
+
+    function renderRooms() {
+      const container = document.getElementById('roomListContainer');
+      container.innerHTML = roomsData.map(r => {
+        const isFull = r.occ >= r.total;
+        return `
+          <div class="card" onclick="alert('Room ${r.num}\\nType: ${r.type}\\nBeds: ${r.occ}/${r.total}\\nMonthly Rent: ₹${r.rent}')">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div>
+                <span style="font-size: 16px; font-weight: 800;">Room ${r.num}</span>
+                <span style="font-size: 12px; color: var(--text-muted); margin-left: 6px;">Floor ${r.floor} • ${r.type}</span>
+              </div>
+              <span class="badge ${isFull ? 'badge-danger' : (r.occ > 0 ? 'badge-warning' : 'badge-success')}">${isFull ? 'Full' : (r.occ > 0 ? 'Partial' : 'Available')}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
+              <span>Bed Allocation: ${r.occ} / ${r.total} Beds</span>
+              <span>₹${r.rent}/mo</span>
+            </div>
+            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+              <div style="width: ${(r.occ/r.total)*100}%; height: 100%; background: ${isFull ? 'var(--status-danger)' : 'var(--status-success)'};"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAttendance() {
+      const container = document.getElementById('attendanceListContainer');
+      container.innerHTML = studentsData.map(s => `
+        <div class="list-item">
+          <div class="list-left">
+            <div class="avatar" style="width: 36px; height: 36px; font-size: 12px;">${s.name.substring(0, 1)}</div>
+            <div>
+              <div style="font-weight: 700; font-size: 13.5px;">${s.name}</div>
+              <div style="font-size: 11px; color: var(--text-muted);">${s.room || 'No Room'}</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 4px;">
+            <button class="demo-btn active" style="padding: 4px 8px;">P</button>
+            <button class="demo-btn" style="padding: 4px 8px;">A</button>
+            <button class="demo-btn" style="padding: 4px 8px;">L</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderFees() {
+      const container = document.getElementById('feesListContainer');
+      container.innerHTML = studentsData.map(s => {
+        const due = s.fee - s.paid;
+        const status = due === 0 ? 'Fully Paid' : (s.paid > 0 ? 'Partially Paid' : 'Pending');
+        return `
+          <div class="list-item" onclick="alert('${s.name}\\nTotal Fee: ₹${s.fee}\\nPaid: ₹${s.paid}\\nOutstanding: ₹${due}')">
+            <div>
+              <div style="font-weight: 700; font-size: 14px;">${s.name}</div>
+              <div style="font-size: 11.5px; color: var(--text-muted);">Due: ₹${due} • Paid: ₹${s.paid}</div>
+            </div>
+            <span class="badge ${due === 0 ? 'badge-success' : (s.paid > 0 ? 'badge-warning' : 'badge-danger')}">${status}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderComplaints() {
+      const container = document.getElementById('complaintsListContainer');
+      container.innerHTML = complaintsData.map(c => `
+        <div class="card" onclick="alert('${c.title}\\nFiled by: ${c.student} (${c.room})\\nCategory: ${c.cat}\\nStatus: ${c.status}\\nResolution: ${c.note || 'Pending action'}')">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-weight: 700; font-size: 14px;">${c.title}</span>
+            <span class="badge ${c.status === 'Resolved' ? 'badge-success' : (c.status === 'In Progress' ? 'badge-warning' : 'badge-danger')}">${c.status}</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted);">${c.student} (${c.room}) • ${c.cat}</div>
+          ${c.note ? `<div style="margin-top: 6px; font-size: 11.5px; background: rgba(16,185,129,0.1); color: var(--status-success); padding: 4px 8px; border-radius: 6px;">Note: ${c.note}</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    function renderRecentComplaints() {
+      const container = document.getElementById('recentComplaintsList');
+      container.innerHTML = complaintsData.slice(0, 3).map(c => `
+        <div class="list-item" style="padding: 8px 0;" onclick="showScreen('complaints')">
+          <div>
+            <div style="font-weight: 700; font-size: 13px;">${c.title}</div>
+            <div style="font-size: 11px; color: var(--text-muted);">${c.student} (${c.room})</div>
+          </div>
+          <span class="badge ${c.status === 'Resolved' ? 'badge-success' : (c.status === 'In Progress' ? 'badge-warning' : 'badge-danger')}">${c.status}</span>
+        </div>
+      `).join('');
+    }
+
+    // Modal Helpers
+    function openAddStudentModal() {
+      const name = prompt("Enter Student Full Name:");
+      if (name) {
+        const id = 'STU' + (1000 + studentsData.length + 1);
+        const roll = prompt("Enter Roll Number:", "23CS" + (100 + studentsData.length));
+        studentsData.push({ id, name, room: null, roll: roll || '23CS101', course: 'B.Tech CSE', fee: 35000, paid: 0 });
+        alert(`Student ${name} (${id}) registered successfully in MongoDB!`);
+        renderStudents();
+        document.getElementById('statStudents').innerText = studentsData.length;
+      }
+    }
+
+    function openAddRoomModal() {
+      const num = prompt("Enter Room Number (e.g. D-401):");
+      if (num) {
+        roomsData.push({ num, floor: 4, type: 'Non-AC Standard', total: 2, occ: 0, rent: 4500 });
+        alert(`Room ${num} created!`);
+        renderRooms();
+      }
+    }
+
+    function openRecordPaymentModal() {
+      const stuName = prompt("Enter Student Name or ID (e.g. Rahul Sharma):");
+      const amt = prompt("Enter Payment Amount (₹):", "10000");
+      if (stuName && amt) {
+        alert(`Payment of ₹${amt} recorded for ${stuName}! Receipt generated.`);
+        renderFees();
+      }
+    }
+
+    function openStudentComplaintModal() {
+      const title = prompt("Enter Complaint Title (e.g. Wi-Fi router reboot needed):");
+      if (title) {
+        complaintsData.unshift({ title, student: 'Rahul Sharma', room: 'A-101', cat: 'Wi-Fi', status: 'Pending', note: '' });
+        alert("Complaint lodged! Warden notified.");
+      }
+    }
+
+    function openApplyLeaveModal() {
+      const reason = prompt("Enter Reason for Leave:", "Family function in hometown");
+      if (reason) {
+        alert("Leave request submitted! Awaiting warden approval.");
+      }
+    }
+
+    // Initial render
+    renderRecentComplaints();
+  </script>
+</body>
+</html>
